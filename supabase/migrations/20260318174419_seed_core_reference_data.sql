@@ -1,0 +1,2 @@
+-- intentionally left blank
+-- local development seed data lives in supabase/seed.sql
