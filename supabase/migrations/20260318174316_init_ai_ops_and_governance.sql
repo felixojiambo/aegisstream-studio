@@ -1,5 +1,5 @@
 create table public.prompt_versions (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   name text not null,
   purpose public.prompt_purpose not null,
   version_label text not null,
@@ -15,7 +15,7 @@ create table public.prompt_versions (
 );
 
 create table public.eval_runs (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   prompt_version_id uuid not null references public.prompt_versions(id) on delete cascade,
   dataset_name text not null,
   run_type public.eval_run_type not null,
@@ -31,7 +31,7 @@ create table public.eval_runs (
 );
 
 create table public.qna_interactions (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   case_id uuid references public.cases(id) on delete cascade,
   question text not null,
   retrieval_scope public.retrieval_scope not null,
@@ -46,7 +46,7 @@ create table public.qna_interactions (
 );
 
 create table public.triage_runs (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   case_id uuid not null references public.cases(id) on delete cascade,
   status public.triage_run_status not null default 'PENDING',
   retrieval_scope public.retrieval_scope not null default 'COMBINED',
@@ -74,7 +74,7 @@ create table public.triage_outputs (
 );
 
 create table public.review_queue (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   case_id uuid not null references public.cases(id) on delete cascade,
   subject_type public.review_subject_type not null,
   subject_id uuid not null,
@@ -88,7 +88,7 @@ create table public.review_queue (
 );
 
 create table public.reviews (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   case_id uuid not null references public.cases(id) on delete cascade,
   review_queue_id uuid references public.review_queue(id) on delete set null,
   subject_type public.review_subject_type not null,
@@ -101,7 +101,7 @@ create table public.reviews (
 );
 
 create table public.audit_events (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   case_id uuid references public.cases(id) on delete set null,
   actor_user_id uuid references auth.users(id) on delete set null,
   entity_type text not null,

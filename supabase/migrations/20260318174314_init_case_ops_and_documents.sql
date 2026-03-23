@@ -1,5 +1,5 @@
 create table public.cases (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   external_ref text,
   title text not null,
   description text,
@@ -15,7 +15,7 @@ create table public.cases (
 );
 
 create table public.case_events (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   case_id uuid not null references public.cases(id) on delete cascade,
   event_type text not null,
   event_data jsonb not null default '{}'::jsonb,
@@ -24,7 +24,7 @@ create table public.case_events (
 );
 
 create table public.case_comments (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   case_id uuid not null references public.cases(id) on delete cascade,
   author_user_id uuid not null references auth.users(id) on delete restrict,
   body text not null,
@@ -33,7 +33,7 @@ create table public.case_comments (
 );
 
 create table public.documents (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   kind public.document_kind not null,
   case_id uuid references public.cases(id) on delete cascade,
   title text,
@@ -64,7 +64,7 @@ create table public.documents (
 );
 
 create table public.document_processing_jobs (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   document_id uuid not null unique references public.documents(id) on delete cascade,
   status public.processing_job_status not null default 'PENDING',
   attempt_count integer not null default 0 check (attempt_count >= 0),
@@ -77,7 +77,7 @@ create table public.document_processing_jobs (
 );
 
 create table public.document_chunks (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   document_id uuid not null references public.documents(id) on delete cascade,
   chunk_index integer not null check (chunk_index >= 0),
   content text not null,
@@ -88,7 +88,7 @@ create table public.document_chunks (
 );
 
 create table public.embeddings (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   chunk_id uuid not null unique references public.document_chunks(id) on delete cascade,
   model_name text not null,
   embedding extensions.vector(1536) not null,
@@ -96,7 +96,7 @@ create table public.embeddings (
 );
 
 create table public.knowledge_documents (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   document_id uuid not null unique references public.documents(id) on delete cascade,
   title text not null,
   category text,
