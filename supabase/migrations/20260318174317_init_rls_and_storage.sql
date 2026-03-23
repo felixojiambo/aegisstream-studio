@@ -1,3 +1,37 @@
+create or replace function public.has_role(role_name text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.user_roles ur
+    join public.roles r on r.id = ur.role_id
+    where ur.user_id = auth.uid()
+      and lower(r.slug) = lower(role_name)
+  );
+$$;
+
+create or replace function public.has_any_role(role_names text[])
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.user_roles ur
+    join public.roles r on r.id = ur.role_id
+    where ur.user_id = auth.uid()
+      and lower(r.slug) = any (
+        select lower(x) from unnest(role_names) as x
+      )
+  );
+$$;
+
 alter table public.profiles enable row level security;
 alter table public.roles enable row level security;
 alter table public.user_roles enable row level security;
@@ -17,9 +51,72 @@ alter table public.triage_outputs enable row level security;
 alter table public.review_queue enable row level security;
 alter table public.reviews enable row level security;
 alter table public.audit_events enable row level security;
+create or replace function public.can_manage_governance()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select public.has_any_role(array['admin', 'knowledge_manager']);
+$$;
 
-alter table storage.objects enable row level security;
+create or replace function public.can_access_case(target_case_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.cases c
+    where c.id = target_case_id
+      and (
+        c.created_by = auth.uid()
+        or c.assigned_agent_id = auth.uid()
+        or c.assigned_reviewer_id = auth.uid()
+        or public.has_any_role(array['admin', 'knowledge_manager'])
+      )
+  );
+$$;
 
+create or replace function public.can_edit_case(target_case_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.cases c
+    where c.id = target_case_id
+      and (
+        c.created_by = auth.uid()
+        or c.assigned_agent_id = auth.uid()
+        or public.has_role('admin')
+      )
+  );
+$$;
+
+create or replace function public.can_review_case(target_case_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.cases c
+    where c.id = target_case_id
+      and (
+        c.assigned_reviewer_id = auth.uid()
+        or public.has_any_role(array['reviewer', 'admin'])
+      )
+  );
+$$;
 create policy profiles_select_self_or_admin
 on public.profiles
 for select
