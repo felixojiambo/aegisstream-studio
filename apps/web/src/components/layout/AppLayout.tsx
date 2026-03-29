@@ -1,15 +1,21 @@
-import type { ReactNode } from "react";
-import { SidebarNav } from "../navigation/SidebarNav";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "./AppSidebar";
 import { TopBar } from "./TopBar";
+import { Outlet } from "react-router-dom";
 
-export function AppLayout({ children }: { children: ReactNode }) {
+export function AppLayout() {
   return (
-    <div className="min-h-screen flex">
-      <SidebarNav />
-      <div className="flex-1">
+    <SidebarProvider defaultOpen>
+      <AppSidebar />
+
+      <SidebarInset className="min-h-screen">
         <TopBar />
-        <main>{children}</main>
-      </div>
-    </div>
+        <main className="flex-1 overflow-auto p-6 lg:p-8">
+          <div className="mx-auto w-full max-w-7xl">
+            <Outlet />
+          </div>
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
