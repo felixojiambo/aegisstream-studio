@@ -1,54 +1,44 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { AuthProvider, useAuth } from "./features/auth/AuthProvider";
-import { AppLayout } from "./components/layout/AppLayout";
-import { AuthLayout } from "./components/layout/AuthLayout";
-import { LoginPage } from "./pages/LoginPage";
-import { DashboardPage } from "./pages/DashboardPage";
-import { CasesPage } from "./pages/CasesPage";
-import { CaseDetailPage } from "./pages/CaseDetailPage";
-import { ReviewsPage } from "./pages/ReviewsPage";
-import { AdminPage } from "./pages/AdminPage";
-import { ProfilePage } from "./pages/ProfilePage";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { AppLayout } from "@/components/layout/AppLayout";
+import LoginPage from "./pages/LoginPage";
+import DashboardPage from "./pages/DashboardPage";
+import CaseListPage from "./pages/CaseListPage";
+import CaseDetailPage from "./pages/CaseDetailPage";
+import ReviewQueuePage from "./pages/ReviewQueuePage";
+import AdminPage from "./pages/AdminPage";
+import SettingsPage from "./pages/SettingsPage";
+import NotFound from "./pages/NotFound";
+import {ProfilePage} from "./pages/ProfilePage.tsx";
 
-function ProtectedApp() {
-  return (
-    <AppLayout>
-      <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/cases" element={<CasesPage />} />
-        <Route path="/cases/:caseId" element={<CaseDetailPage />} />
-        <Route path="/reviews" element={<ReviewsPage />} />
-        <Route path="/admin" element={<AdminPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-      </Routes>
-    </AppLayout>
-  );
-}
+const queryClient = new QueryClient();
 
-function PublicApp() {
-  return (
-    <AuthLayout>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-      </Routes>
-    </AuthLayout>
-  );
-}
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route element={<AppLayout />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/cases" element={<CaseListPage />} />
+            <Route path="/cases/:caseId" element={<CaseDetailPage />} />
+            <Route path="/review-queue" element={<ReviewQueuePage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/admin" element={<AdminPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+          </Route>
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
-function AppRoutes() {
-  const { user, loading } = useAuth();
-
-  if (loading) return <div className="p-6">Loading...</div>;
-  return user ? <ProtectedApp /> : <PublicApp />;
-}
-
-export default function App() {
-  return (
-    <BrowserRouter>
-      <AuthProvider>
-        <AppRoutes />
-      </AuthProvider>
-    </BrowserRouter>
-  );
-}
+export default App;
