@@ -33,6 +33,23 @@ const App = () => (
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+{/*            <Route*/}
+{/*  path="/review-queue"*/}
+{/*  element={*/}
+{/*    <RoleGuard allowedRoles={["reviewer", "admin"]}>*/}
+{/*      <ReviewQueuePage />*/}
+{/*    </RoleGuard>*/}
+{/*  }*/}
+{/*/>*/}
+
+{/*<Route*/}
+{/*  path="/admin"*/}
+{/*  element={*/}
+{/*    <RoleGuard allowedRoles={["admin", "knowledge_manager"]}>*/}
+{/*      <AdminPage />*/}
+{/*    </RoleGuard>*/}
+{/*  }*/}
+{/*/>*/}
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
