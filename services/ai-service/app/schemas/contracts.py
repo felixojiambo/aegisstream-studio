@@ -85,6 +85,11 @@ class EvidenceChunk(AppBaseModel):
     chunk_id: UUID
     score: float = Field(ge=0.0, le=1.0)
     excerpt: str
+    document_kind: Literal["CASE", "KNOWLEDGE"]
+    case_id: UUID | None = None
+    document_title: str | None = None
+    storage_bucket: str | None = None
+    storage_path: str | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
@@ -101,8 +106,33 @@ class RetrieveEvidenceResponse(AppBaseModel):
     query: str
     scope: RetrievalScope
     top_k: int
+    retrieval_trace_id: UUID
     evidence: list[EvidenceChunk]
-    implementation_status: Literal["stub"] = "stub"
+
+
+class KnowledgeDocumentRecord(AppBaseModel):
+    knowledge_document_id: UUID
+    document_id: UUID
+    title: str
+    category: str | None = None
+    is_active: bool
+    processing_status: str
+    updated_at: datetime
+
+
+class KnowledgeDocumentListResponse(AppBaseModel):
+    items: list[KnowledgeDocumentRecord]
+
+
+class SetKnowledgeDocumentStatusRequest(AppBaseModel):
+    is_active: bool
+
+
+class SetKnowledgeDocumentStatusResponse(AppBaseModel):
+    knowledge_document_id: UUID
+    document_id: UUID
+    is_active: bool
+    updated_at: datetime
 
 
 class Citation(AppBaseModel):

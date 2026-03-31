@@ -11,17 +11,21 @@ from app.schemas.contracts import (
     RetryDocumentResponse,
     TriageRequest,
     TriageResponse,
-    new_uuid,
     utcnow,
+    new_uuid,
 )
 from app.services.document_pipeline import DocumentPipelineService
 from app.services.event_publisher import EventPublisher
+from app.services.knowledge import KnowledgeService
+from app.services.retrieval import RetrievalService
 
 
 class AIOrchestrationService:
     def __init__(self, publisher: EventPublisher) -> None:
         self.publisher = publisher
         self.document_pipeline = DocumentPipelineService(publisher=publisher)
+        self.retrieval_service = RetrievalService()
+        self.knowledge_service = KnowledgeService()
 
     async def ingest_document(
         self, request: DocumentIngestRequest
@@ -36,12 +40,7 @@ class AIOrchestrationService:
     async def retrieve_evidence(
         self, request: RetrieveEvidenceRequest
     ) -> RetrieveEvidenceResponse:
-        return RetrieveEvidenceResponse(
-            query=request.query,
-            scope=request.scope,
-            top_k=request.top_k,
-            evidence=[],
-        )
+        return await self.retrieval_service.retrieve(request)
 
     async def answer_grounded_question(
         self, request: AnswerGroundedQuestionRequest
@@ -51,7 +50,7 @@ class AIOrchestrationService:
             citations=[],
             confidence=0.0,
             missing_context_questions=[
-                "Document retrieval and model orchestration are not implemented yet."
+                "Question-answer orchestration arrives in Phase 8."
             ],
             refusal_reason="IMPLEMENTATION_PENDING",
         )
@@ -71,7 +70,7 @@ class AIOrchestrationService:
             triage_run_id=triage_run_id,
             summary="Structured triage is not implemented yet.",
             extracted_fields={},
-            missing_information=["Triage extraction pipeline not implemented yet."],
+            missing_information=["Triage orchestration arrives in Phase 9."],
             classification=None,
             routing_recommendation=None,
             draft_response=None,
