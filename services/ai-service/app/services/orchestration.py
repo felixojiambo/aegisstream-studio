@@ -1,5 +1,3 @@
-from datetime import datetime, timezone
-
 from app.schemas.contracts import (
     AnswerGroundedQuestionRequest,
     AnswerGroundedQuestionResponse,
@@ -10,36 +8,30 @@ from app.schemas.contracts import (
     ProcessingStatus,
     RetrieveEvidenceRequest,
     RetrieveEvidenceResponse,
+    RetryDocumentResponse,
     TriageRequest,
     TriageResponse,
     new_uuid,
+    utcnow,
 )
+from app.services.document_pipeline import DocumentPipelineService
 from app.services.event_publisher import EventPublisher
 
 
 class AIOrchestrationService:
     def __init__(self, publisher: EventPublisher) -> None:
         self.publisher = publisher
+        self.document_pipeline = DocumentPipelineService(publisher=publisher)
 
     async def ingest_document(
         self, request: DocumentIngestRequest
     ) -> DocumentIngestResponse:
-        response = DocumentIngestResponse(
-            job_id=new_uuid(),
-            document_id=request.document_id,
-            status=ProcessingStatus.ACCEPTED,
-            accepted_at=datetime.now(timezone.utc),
-        )
+        return await self.document_pipeline.ingest_document(request)
 
-        await self.publisher.publish(
-            "document.ingest.accepted",
-            {
-                "job_id": str(response.job_id),
-                "document_id": str(request.document_id),
-                "case_id": str(request.case_id) if request.case_id else None,
-            },
-        )
-        return response
+    async def retry_document(
+        self, request: DocumentIngestRequest
+    ) -> RetryDocumentResponse:
+        return await self.document_pipeline.retry_document(request)
 
     async def retrieve_evidence(
         self, request: RetrieveEvidenceRequest
@@ -105,5 +97,5 @@ class AIOrchestrationService:
         return EvalRunResponse(
             eval_run_id=eval_run_id,
             status=ProcessingStatus.ACCEPTED,
-            accepted_at=datetime.now(timezone.utc),
+            accepted_at=utcnow(),
         )

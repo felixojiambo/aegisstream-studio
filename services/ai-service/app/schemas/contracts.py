@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Literal
 from uuid import UUID, uuid4
@@ -38,15 +38,46 @@ class DocumentIngestRequest(AppBaseModel):
     mime_type: str
     requested_by: UUID
     force_reprocess: bool = False
+    process_inline: bool = True
     correlation_id: str | None = None
 
 
 class DocumentIngestResponse(AppBaseModel):
     job_id: UUID
     document_id: UUID
-    status: ProcessingStatus
+    status: Literal["UPLOADED", "PROCESSING", "FAILED", "READY"]
     accepted_at: datetime
-    implementation_status: Literal["stub"] = "stub"
+    chunk_count: int = 0
+    embedding_count: int = 0
+    processing_error: str | None = None
+
+
+class RetryDocumentRequest(AppBaseModel):
+    document_id: UUID
+    requested_by: UUID
+    correlation_id: str | None = None
+
+
+class RetryDocumentResponse(AppBaseModel):
+    job_id: UUID
+    document_id: UUID
+    status: Literal["UPLOADED", "PROCESSING", "FAILED", "READY"]
+    retried_at: datetime
+    chunk_count: int = 0
+    embedding_count: int = 0
+    processing_error: str | None = None
+
+
+class DocumentProcessingJobResponse(AppBaseModel):
+    job_id: UUID
+    document_id: UUID
+    status: str
+    attempt_count: int
+    last_error: str | None = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+    created_at: datetime
+    updated_at: datetime
 
 
 class EvidenceChunk(AppBaseModel):
@@ -135,6 +166,10 @@ class EvalRunResponse(AppBaseModel):
     status: ProcessingStatus
     accepted_at: datetime
     implementation_status: Literal["stub"] = "stub"
+
+
+def utcnow() -> datetime:
+    return datetime.now(timezone.utc)
 
 
 def new_uuid() -> UUID:

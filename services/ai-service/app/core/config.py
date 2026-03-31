@@ -21,10 +21,16 @@ class Settings(BaseSettings):
 
     supabase_url: str | None = None
     supabase_service_role_key: str | None = None
+    supabase_db_url: str | None = None
+
     anthropic_api_key: str | None = None
 
     default_top_k: int = Field(default=5, ge=1, le=50)
     request_timeout_seconds: int = Field(default=30, ge=1, le=300)
+
+    chunk_size_chars: int = Field(default=1200, ge=200, le=5000)
+    chunk_overlap_chars: int = Field(default=200, ge=0, le=1000)
+    embedding_dimensions: int = Field(default=1536, ge=32, le=4096)
 
     kafka_enabled: bool = False
     kafka_bootstrap_servers: str | None = None
